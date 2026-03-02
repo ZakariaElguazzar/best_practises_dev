@@ -788,7 +788,647 @@ public record ApiError(
 Then return consistent JSON for every error.
 
 That’s how mature APIs are built.
+
+The Short Answer
+@RestControllerAdvice
+
+is basically:
+
+@ControllerAdvice + @ResponseBody
+
+That’s it.
+
+But let’s go deeper.
+
+@ControllerAdvice
+
+This is a global component that applies to all controllers.
+
+It allows you to:
+
+Handle exceptions globally
+
+Add global model attributes
+
+Bind data across controllers
+
+Example
+@ControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(RuntimeException.class)
+    public String handleError(Model model, RuntimeException ex) {
+        model.addAttribute("errorMessage", ex.getMessage());
+        return "error-page";
+    }
+}
+
+ This returns a view name (like Thymeleaf, JSP, etc.).
+
+So @ControllerAdvice is typically used in MVC applications that render HTML pages.
+
+ @RestControllerAdvice
+
+This is specialized for REST APIs.
+
+It automatically adds @ResponseBody behavior.
+
+So instead of returning a view, it returns JSON.
+
+Example
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<String> handleError(RuntimeException ex) {
+        return ResponseEntity
+                .status(500)
+                .body(ex.getMessage());
+    }
+}
+
+ This returns JSON (or raw body) instead of a view.
+
+ Practical Difference
+| Feature                       | @ControllerAdvice       | @RestControllerAdvice |
+| ----------------------------- | ----------------------- | --------------------- |
+| Used for                      | MVC (HTML views)        | REST APIs             |
+| Returns view?                 | ✅ Yes                   | ❌ No                  |
+| Returns JSON automatically?   | ❌ Needs `@ResponseBody` | ✅ Yes                 |
+| Best for Spring Boot REST app | ❌                       | ✅                     |
+🎯 Real-World Rule
+
+If you are building:
+
+🖥 Traditional web app → @ControllerAdvice
+
+🌐 REST API backend → @RestControllerAdvice
+
+In modern Spring Boot APIs, you almost always use:
+
+@RestControllerAdvice
+🧠 Why This Matters Architecturally
+
+In REST:
+
+Errors should be JSON
+
+Clients (frontend, mobile, other services) expect structured responses
+
+No server-side view rendering
+
+So @RestControllerAdvice aligns with API-first design.
+
+🚀 Clean API Error Example
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<ApiError> handleNotFound(EntityNotFoundException ex) {
+        ApiError error = new ApiError(
+                ex.getMessage(),
+                404,
+                LocalDateTime.now()
+        );
+
+        return ResponseEntity.status(404).body(error);
+    }
+}
+
+Now every error is consistent and structured.
+
+That’s how scalable APIs are built.
 ---
+
+
+
+
+Voici **tous les codes de statut HTTP officiels** (avec leurs significations) tels que définis par la spécification **RFC 9110** (Internet standard) — regroupés par catégories pour une lecture claire 👇 ([MDN Web Docs][1])
+
+
+
+---
+
+
+
+## 📘 **1xx — Réponses informationnelles**
+
+
+
+| Code    | Signification                                                                                |
+
+| ------- | -------------------------------------------------------------------------------------------- |
+
+| **100** | Continue — le serveur a reçu les en-têtes, peut poursuivre ([MDN Web Docs][1])               |
+
+| **101** | Switching Protocols — changement de protocole (par ex. HTTP → WebSocket) ([MDN Web Docs][1]) |
+
+| **102** | Processing — le serveur traite toujours la requête (WebDAV) ([serverheaders.com][2])         |
+
+| **103** | Early Hints — premières informations avant la réponse finale ([Hostinger][3])                |
+
+
+
+---
+
+
+
+## ✅ **2xx — Succès (Successful Responses)**
+
+
+
+| Code    | Signification                                                                          |
+
+| ------- | -------------------------------------------------------------------------------------- |
+
+| **200** | OK — succès général ([serverheaders.com][2])                                           |
+
+| **201** | Created — ressource créée ([serverheaders.com][2])                                     |
+
+| **202** | Accepted — requête acceptée mais pas encore traitée ([serverheaders.com][2])           |
+
+| **203** | Non-Authoritative Information — réponse modifiée par un proxy ([serverheaders.com][2]) |
+
+| **204** | No Content — requête traitée, sans contenu de réponse ([serverheaders.com][2])         |
+
+| **205** | Reset Content — réinitialiser le document affiché ([serverheaders.com][2])             |
+
+| **206** | Partial Content — contenu partiel (range requests) ([serverheaders.com][2])            |
+
+| **207** | Multi-Status — WebDAV ([serverheaders.com][2])                                         |
+
+| **208** | Already Reported — WebDAV optimisation ([serverheaders.com][2])                        |
+
+| **226** | IM Used — Delta encoding ([serverheaders.com][2])                                      |
+
+
+
+---
+
+
+
+## 🔁 **3xx — Redirections**
+
+
+
+| Code    | Signification                                                                                |
+
+| ------- | -------------------------------------------------------------------------------------------- |
+
+| **300** | Multiple Choices — plusieurs options possibles ([serverheaders.com][2])                      |
+
+| **301** | Moved Permanently — ressource déplacée définitivement ([serverheaders.com][2])               |
+
+| **302** | Found — déplacement temporaire ([serverheaders.com][2])                                      |
+
+| **303** | See Other — voir une autre URI ([serverheaders.com][2])                                      |
+
+| **304** | Not Modified — pas modifié (cache) ([serverheaders.com][2])                                  |
+
+| **305** | Use Proxy — utiliser proxy (rare) ([serverheaders.com][2])                                   |
+
+| **306** | Switch Proxy — désuet ([serverheaders.com][2])                                               |
+
+| **307** | Temporary Redirect — redirection temporaire sans changer la méthode ([serverheaders.com][2]) |
+
+| **308** | Permanent Redirect — redirection permanente sans changer la méthode ([serverheaders.com][2]) |
+
+
+
+---
+
+
+
+## 🚫 **4xx — Erreurs client**
+
+
+
+| Code    | Signification                                                                              |
+
+| ------- | ------------------------------------------------------------------------------------------ |
+
+| **400** | Bad Request — requête invalide ([serverheaders.com][2])                                    |
+
+| **401** | Unauthorized — authentification requise ou incorrecte ([serverheaders.com][2])             |
+
+| **402** | Payment Required — réservé (rare) ([Wikipedia][4])                                         |
+
+| **403** | Forbidden — refus d’accès ([serverheaders.com][2])                                         |
+
+| **404** | Not Found — ressource introuvable ([serverheaders.com][2])                                 |
+
+| **405** | Method Not Allowed — méthode HTTP non autorisée ([serverheaders.com][2])                   |
+
+| **406** | Not Acceptable — contenu non acceptable ([serverheaders.com][2])                           |
+
+| **407** | Proxy Authentication Required — proxy demande auth ([serverheaders.com][2])                |
+
+| **408** | Request Timeout — délai dépassé ([serverheaders.com][2])                                   |
+
+| **409** | Conflict — conflit d’état ([serverheaders.com][2])                                         |
+
+| **410** | Gone — ressource définitivement disparue ([serverheaders.com][2])                          |
+
+| **411** | Length Required — longueur requise ([serverheaders.com][2])                                |
+
+| **412** | Precondition Failed — précondition non satisfaite ([serverheaders.com][2])                 |
+
+| **413** | Payload Too Large — corps trop volumineux ([serverheaders.com][2])                         |
+
+| **414** | URI Too Long — URI trop longue ([serverheaders.com][2])                                    |
+
+| **415** | Unsupported Media Type — type non supporté ([serverheaders.com][2])                        |
+
+| **416** | Range Not Satisfiable — plage non satisfiable ([serverheaders.com][2])                     |
+
+| **417** | Expectation Failed — attente impossible ([serverheaders.com][2])                           |
+
+| **418** | I’m a teapot — erreur humoristique (RFC 2324) ([serverheaders.com][2])                     |
+
+| **421** | Misdirected Request — mauvaise direction ([serverheaders.com][2])                          |
+
+| **422** | Unprocessable Entity — entité non traitable ([serverheaders.com][2])                       |
+
+| **423** | Locked — verrouillé ([serverheaders.com][2])                                               |
+
+| **424** | Failed Dependency — dépendance échouée ([serverheaders.com][2])                            |
+
+| **426** | Upgrade Required — mise à niveau requise ([serverheaders.com][2])                          |
+
+| **428** | Precondition Required — précondition requise ([serverheaders.com][2])                      |
+
+| **429** | Too Many Requests — trop de requêtes ([serverheaders.com][2])                              |
+
+| **431** | Request Header Fields Too Large — en-têtes trop grands ([serverheaders.com][2])            |
+
+| **451** | Unavailable For Legal Reasons — non disponible pour raison légale ([serverheaders.com][2]) |
+
+
+
+---
+
+
+
+## ⚠ **5xx — Erreurs serveur**
+
+
+
+| Code    | Signification                                                                  |
+
+| ------- | ------------------------------------------------------------------------------ |
+
+| **500** | Internal Server Error — erreur serveur interne ([serverheaders.com][2])        |
+
+| **501** | Not Implemented — non implémenté ([serverheaders.com][2])                      |
+
+| **502** | Bad Gateway — mauvaise passerelle ([serverheaders.com][2])                     |
+
+| **503** | Service Unavailable — service indisponible ([serverheaders.com][2])            |
+
+| **504** | Gateway Timeout — délai d’attente passerelle ([serverheaders.com][2])          |
+
+| **505** | HTTP Version Not Supported — version non supportée ([serverheaders.com][2])    |
+
+| **506** | Variant Also Negotiates — négociation alternative ([serverheaders.com][2])     |
+
+| **507** | Insufficient Storage — espace insuffisant ([serverheaders.com][2])             |
+
+| **508** | Loop Detected — boucle détectée ([serverheaders.com][2])                       |
+
+| **510** | Not Extended — extension requise ([serverheaders.com][2])                      |
+
+| **511** | Network Authentication Required — auth réseau requise ([serverheaders.com][2]) |
+
+
+
+---
+
+
+
+## 📌 Notes importantes
+
+
+
+### ⭐ Classes de codes
+
+
+
+* **1xx** : informations intermédiaires ([MDN Web Docs][1])
+
+* **2xx** : succès ([MDN Web Docs][1])
+
+* **3xx** : redirections ([MDN Web Docs][1])
+
+* **4xx** : erreur client ([MDN Web Docs][1])
+
+* **5xx** : erreur serveur ([MDN Web Docs][1])
+
+
+
+---
+
+
+
+## 📌 Bonus (non standards / utilisés par certains serveurs API)
+
+
+
+Ceux-ci ne sont **pas dans la norme officielle**, mais on les rencontre parfois :
+
+
+
+| Code    | Signification / Usage                                    |
+
+| ------- | -------------------------------------------------------- |
+
+| **420** | Enhance Your Calm (Twitter API rate limit) ([Reddit][5]) |
+
+| **440** | Login Timeout (IIS) ([Wikipedia][6])                     |
+
+| **449** | Retry With (IIS) ([Wikipedia][6])                        |
+
+| **419** | Page Expired (Laravel) ([Wikipedia][6])                  |
+
+---
+
+# 🔷 I) Principes fondamentaux de conception OO
+
+## 1️⃣ SOLID
+
+* **S** — Single Responsibility Principle
+* **O** — Open/Closed Principle
+* **L** — Liskov Substitution Principle
+* **I** — Interface Segregation Principle
+* **D** — Dependency Inversion Principle
+
+---
+
+## 2️⃣ GRASP (Responsabilités)
+
+* Information Expert
+* Creator
+* Controller
+* Low Coupling
+* High Cohesion
+* Polymorphism
+* Pure Fabrication
+* Indirection
+* Protected Variations
+
+---
+
+## 3️⃣ Autres principes OO essentiels
+
+* DRY (Don't Repeat Yourself)
+* KISS (Keep It Simple, Stupid)
+* YAGNI (You Aren’t Gonna Need It)
+* Separation of Concerns
+* Encapsulation
+* Abstraction
+* Composition over Inheritance
+* Favor immutability
+* Law of Demeter
+
+---
+
+# 🔷 II) Concepts fondamentaux de modélisation UML
+
+Basés sur le standard défini par l’**Object Management Group**.
+
+---
+
+## 1️⃣ Relations UML
+
+* Association
+* Agrégation
+* Composition
+* Généralisation (Héritage)
+* Réalisation (Interface)
+* Dépendance
+
+---
+
+## 2️⃣ Multiplicité
+
+* 1..1
+* 0..1
+* 1..*
+* 0..*
+
+---
+
+## 3️⃣ Types de diagrammes UML
+
+### Structurels
+
+* Diagramme de classes
+* Diagramme d’objets
+* Diagramme de composants
+* Diagramme de déploiement
+* Diagramme de packages
+
+### Comportementaux
+
+* Diagramme de séquence
+* Diagramme d’activités
+* Diagramme d’états
+* Diagramme de cas d’utilisation
+* Diagramme de communication
+
+---
+
+# 🔷 III) Cohésion & Couplage
+
+## Haute Cohésion
+
+Une classe fait **une seule chose bien**.
+
+## Faible Couplage
+
+Dépendances minimales entre classes.
+
+---
+
+# 🔷 IV) Anti-patterns à éviter
+
+* God Object
+* Anemic Domain Model
+* Spaghetti Code
+* Circular Dependencies
+* Tight Coupling
+* Shotgun Surgery
+* Feature Envy
+* Big Ball of Mud
+* Primitive Obsession
+* Duplicate Code
+
+---
+
+# 🔷 V) Design Patterns (GoF)
+
+Issus du livre de la **Design Patterns: Elements of Reusable Object-Oriented Software**
+
+---
+
+## 1️⃣ Créationnels
+
+* Singleton
+* Factory Method
+* Abstract Factory
+* Builder
+* Prototype
+
+---
+
+## 2️⃣ Structurels
+
+* Adapter
+* Bridge
+* Composite
+* Decorator
+* Facade
+* Flyweight
+* Proxy
+
+---
+
+## 3️⃣ Comportementaux
+
+* Strategy
+* Observer
+* Command
+* State
+* Chain of Responsibility
+* Mediator
+* Memento
+* Template Method
+* Visitor
+* Interpreter
+
+---
+
+# 🔷 VI) Architecture Logicielle
+
+## 1️⃣ Clean Architecture
+
+Concept popularisé par **Robert C. Martin**
+
+* Séparation par couches
+* Indépendance des frameworks
+* Dépendances vers l’intérieur
+
+---
+
+## 2️⃣ Domain-Driven Design (DDD)
+
+Proposé par **Eric Evans**
+
+Concepts clés :
+
+* Entity
+* Value Object
+* Aggregate
+* Aggregate Root
+* Repository
+* Domain Service
+* Ubiquitous Language
+* Bounded Context
+
+---
+
+## 3️⃣ Architectures courantes
+
+* Layered Architecture
+* Hexagonal Architecture (Ports & Adapters)
+* Onion Architecture
+* Microservices
+* Event-Driven Architecture
+* CQRS
+* Event Sourcing
+
+---
+
+# 🔷 VII) Concepts avancés de qualité
+
+## 1️⃣ Métriques de conception
+
+* Complexité cyclomatique
+* Instabilité
+* Abstractness
+* Afferent/Efferent Coupling
+* Maintainability Index
+
+---
+
+## 2️⃣ Propriétés de qualité (ISO 25010)
+
+* Maintainability
+* Scalability
+* Reliability
+* Testability
+* Security
+* Portability
+* Performance
+
+---
+
+# 🔷 VIII) Modélisation métier
+
+* Modèle conceptuel
+* Modèle logique
+* Modèle physique
+* Diagramme entité-association
+* Normalisation des données
+* Cardinalités
+
+---
+
+# 🔷 IX) Bonnes pratiques générales
+
+* Nommer clairement les classes
+* Éviter les dépendances circulaires
+* Favoriser les interfaces
+* Séparer domaine et infrastructure
+* Centraliser la gestion d’erreurs
+* Utiliser des DTO pour exposer les données
+* Versionner les APIs
+* Documenter avec OpenAPI
+
+---
+
+# 🔷 X) Concepts liés à la maintenabilité
+
+* Refactoring
+* Code Review
+* Tests unitaires
+* Tests d’intégration
+* TDD
+* BDD
+* CI/CD
+
+---
+
+# 🎯 Résumé Global
+
+La conception et la modélisation reposent sur :
+
+* ✔ Principes fondamentaux (SOLID, GRASP)
+* ✔ Bonne gestion des dépendances
+* ✔ Modélisation claire des relations
+* ✔ Cohérence métier
+* ✔ Évolutivité
+* ✔ Simplicité
+* ✔ Testabilité
+* ✔ Séparation des responsabilités
+
+---
+
+
+
+
+
+
+
 
 
 
