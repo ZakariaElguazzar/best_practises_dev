@@ -1423,6 +1423,158 @@ La conception et la modélisation reposent sur :
 
 ---
 
+---
+
+# ✅ Structure recommandée des branches (à 2 développeurs)
+
+## 1️⃣ Branche principale : `main`
+
+* Contient **uniquement du code stable**
+* Toujours **fonctionnelle**
+* Pas de développement direct dessus ❌
+
+```
+main  → code prêt pour production
+```
+
+---
+
+## 2️⃣ Branche d’intégration : `develop`
+
+* Contient le code en cours de validation
+* Toutes les features passent par ici avant d’aller vers `main`
+
+```
+main
+  ↑
+develop
+```
+
+---
+
+## 3️⃣ Branches de fonctionnalités : `feature/*`
+
+Chaque nouvelle tâche = une nouvelle branche.
+
+Exemples :
+
+```
+feature/login-api
+feature/jwt-auth
+feature/dashboard-ui
+feature/ml-model-training
+```
+
+Structure complète :
+
+```
+main
+  ↑
+develop
+  ↑
+feature/*
+```
+
+---
+
+# 🔁 Workflow recommandé (étapes concrètes)
+
+### 🧑‍💻 Étape 1 — Créer une feature
+
+Depuis `develop` :
+
+```bash
+git checkout develop
+git pull origin develop
+git checkout -b feature/nom-feature
+```
+
+---
+
+### 🧑‍💻 Étape 2 — Travailler et push
+
+```bash
+git add .
+git commit -m "Add login validation"
+git push origin feature/nom-feature
+```
+
+---
+
+### 🔍 Étape 3 — Pull Request vers `develop`
+
+* Ouvrir une **Pull Request**
+* L’autre personne fait la review
+* Merge vers `develop`
+
+⚠️ Toujours review même à 2 → c’est une bonne pratique professionnelle.
+
+---
+
+### 🚀 Étape 4 — Release vers `main`
+
+Quand `develop` est stable :
+
+* Pull Request `develop → main`
+* Merge
+* (Optionnel) Tag version :
+
+```bash
+git tag v1.0
+git push origin v1.0
+```
+
+---
+
+# 📌 Règles importantes à 2 personnes
+
+### ❌ Ne jamais :
+
+* Travailler directement sur `main`
+* Pusher sur `develop` sans PR
+* Travailler sur la même feature branch
+
+### ✅ Toujours :
+
+* Pull avant de commencer (`git pull`)
+* Une feature = une branche
+* Messages de commit clairs
+
+---
+
+# 🎯 Version plus simple (si projet petit)
+
+Si c’est un petit projet académique :
+
+```
+main
+  ↑
+feature/*
+```
+
+Vous pouvez supprimer `develop`.
+
+Mais si vous voulez une organisation **plus professionnelle (comme en entreprise)** → gardez `develop`.
+
+---
+
+# 🧠 Conseil important pour toi (vu ton profil)
+
+Vu que tu prépares des entretiens IT :
+
+👉 Mentionne que vous utilisez :
+
+* Git Flow simplifié
+* Pull Requests
+* Code Review
+* Feature branching
+
+Les recruteurs aiment voir que tu comprends le **collaborative workflow**.
+
+---
+
+
+
 
 
 
